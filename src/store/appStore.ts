@@ -11,6 +11,7 @@ interface AppState {
   indentSize: IndentSize;
   theme: Theme;
   isDark: boolean;
+  fontSize: number;
 
   // 错误状态
   error: JsonError | null;
@@ -20,12 +21,15 @@ interface AppState {
   setOutput: (value: string) => void;
   setIndentSize: (size: IndentSize) => void;
   toggleTheme: () => void;
+  setFontSize: (size: number) => void;
+  resetFontSize: () => void;
 
   // JSON 操作
   format: () => void;
   minify: () => void;
   clear: () => void;
   loadExample: () => void;
+  fix: () => { success: boolean; message: string };
 }
 
 const exampleJson = JSON.stringify({
@@ -51,6 +55,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   indentSize: 2,
   theme: 'dark',
   isDark: true,
+  fontSize: 14,
   error: null,
 
   // 设置输入
@@ -82,6 +87,14 @@ export const useAppStore = create<AppState>((set, get) => ({
       isDark: newTheme === 'dark'
     });
   },
+
+  // 设置字体大小
+  setFontSize: (size: number) => {
+    set({ fontSize: Math.round(size) });
+  },
+
+  // 重置字体大小
+  resetFontSize: () => set({ fontSize: 14 }),
 
   // 格式化 JSON
   format: () => {
@@ -145,5 +158,48 @@ export const useAppStore = create<AppState>((set, get) => ({
       indent: 2
     });
     set({ output: formatted });
+  },
+
+  // 自动修复 JSON 错误
+  fix: () => {
+    const { input } = get();
+    if (!input.trim()) {
+      return { success: false, message: '没有可修复的内容' };
+    }
+
+    const { result, fixed, changes } = JsonFormatter.fix(input);
+
+    if (changes.length === 0) {
+      return { success: false, message: '没有可修复的错误' };
+    }
+
+    // 验证修复后的结果
+    const validation = JsonFormatter.validate(result);
+
+    if (validation.valid) {
+      // 修复成功且 JSON 有效
+      set({ input: result, error: null });
+      const formatted = JsonFormatter.format(result, {
+        ...defaultFormatOptions,
+        indent: get().indentSize
+      });
+      set({ output: formatted });
+      return {
+        success: true,
+        message: `已修复 ${changes.length} 个问题: ${changes.join(', ')}`
+      };
+    } else if (fixed) {
+      // 修复后仍有问题但有所改善
+      set({ input: result, error: validation.error || null });
+      return {
+        success: false,
+        message: `已尝试修复 ${changes.length} 个问题，但仍存在错误: ${validation.error?.message || '未知错误'}`
+      };
+    } else {
+      return {
+        success: false,
+        message: '未能自动修复错误'
+      };
+    }
   }
 }));
