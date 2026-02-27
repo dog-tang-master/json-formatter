@@ -27,6 +27,9 @@ interface AppState {
   // JSON 操作
   format: () => void;
   minify: () => void;
+  escape: () => void;
+  unescape: () => void;
+  minifyAndEscape: () => void;
   clear: () => void;
   loadExample: () => void;
   fix: () => { success: boolean; message: string };
@@ -140,6 +143,64 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({
         error: {
           message: e instanceof Error ? e.message : '压缩失败'
+        }
+      });
+    }
+  },
+
+  // 转义 JSON
+  escape: () => {
+    const { input } = get();
+    if (!input.trim()) return;
+
+    try {
+      const escaped = JsonFormatter.escape(input);
+      set({ output: escaped, error: null });
+    } catch (e) {
+      set({
+        error: {
+          message: e instanceof Error ? e.message : '转义失败'
+        }
+      });
+    }
+  },
+
+  // 去转义 JSON
+  unescape: () => {
+    const { input } = get();
+    if (!input.trim()) return;
+
+    try {
+      const unescaped = JsonFormatter.unescape(input);
+      set({ output: unescaped, error: null });
+    } catch (e) {
+      set({
+        error: {
+          message: e instanceof Error ? e.message : '去转义失败，请检查输入是否为有效的转义 JSON 字符串'
+        }
+      });
+    }
+  },
+
+  // 压缩并转义 JSON
+  minifyAndEscape: () => {
+    const { input } = get();
+    if (!input.trim()) return;
+
+    const validation = JsonFormatter.validate(input);
+    if (!validation.valid) {
+      set({ error: validation.error });
+      return;
+    }
+
+    try {
+      const minified = JsonFormatter.minify(input);
+      const escaped = JsonFormatter.escape(minified);
+      set({ output: escaped, error: null });
+    } catch (e) {
+      set({
+        error: {
+          message: e instanceof Error ? e.message : '压缩转义失败'
         }
       });
     }

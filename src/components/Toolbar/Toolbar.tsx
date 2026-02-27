@@ -9,7 +9,10 @@ import {
   Sun,
   AlignLeft,
   Wand2,
-  X
+  X,
+  ArrowRightLeft,
+  FileText,
+  Layers
 } from 'lucide-react';
 
 export function Toolbar() {
@@ -22,6 +25,9 @@ export function Toolbar() {
     toggleTheme,
     format,
     minify,
+    escape,
+    unescape,
+    minifyAndEscape,
     clear,
     loadExample,
     fix
@@ -75,6 +81,45 @@ export function Toolbar() {
           >
             <Minimize2 size={18} />
             <span>压缩</span>
+          </button>
+
+          <button
+            onClick={minifyAndEscape}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md ${
+              isDark
+                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white'
+                : 'bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-400 hover:to-blue-400 text-white'
+            }`}
+            title="先压缩再转义 JSON"
+          >
+            <Layers size={18} />
+            <span>压缩转义</span>
+          </button>
+
+          <button
+            onClick={escape}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md ${
+              isDark
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white'
+                : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white'
+            }`}
+            title="将 JSON 转义为字符串形式"
+          >
+            <FileText size={18} />
+            <span>转义</span>
+          </button>
+
+          <button
+            onClick={unescape}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md ${
+              isDark
+                ? 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white'
+                : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white'
+            }`}
+            title="将转义的 JSON 字符串还原"
+          >
+            <ArrowRightLeft size={18} />
+            <span>去转义</span>
           </button>
 
           {/* 修复按钮 - 只在有错误时显示 */}

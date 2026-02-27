@@ -23,6 +23,73 @@ export class JsonFormatter {
   }
 
   /**
+   * 转义 JSON 字符串
+   * 将 JSON 转换为可嵌入字符串的转义形式（不带外层引号）
+   * 不改变原始格式，仅对需要转义的字符进行转义
+   */
+  static escape(json: string): string {
+    let result = '';
+    for (let i = 0; i < json.length; i++) {
+      const char = json[i];
+      switch (char) {
+        case '"':
+          result += '\\"';
+          break;
+        case '\\':
+          result += '\\\\';
+          break;
+        default:
+          result += char;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * 去转义 JSON 字符串
+   * 将转义的 JSON 字符串还原为正常 JSON
+   */
+  static unescape(escapedJson: string): string {
+    let result = '';
+    let i = 0;
+    while (i < escapedJson.length) {
+      const char = escapedJson[i];
+      if (char === '\\' && i + 1 < escapedJson.length) {
+        const nextChar = escapedJson[i + 1];
+        switch (nextChar) {
+          case '"':
+            result += '"';
+            i += 2;
+            break;
+          case '\\':
+            result += '\\';
+            i += 2;
+            break;
+          case 'n':
+            result += '\n';
+            i += 2;
+            break;
+          case 'r':
+            result += '\r';
+            i += 2;
+            break;
+          case 't':
+            result += '\t';
+            i += 2;
+            break;
+          default:
+            result += char;
+            i++;
+        }
+      } else {
+        result += char;
+        i++;
+      }
+    }
+    return result;
+  }
+
+  /**
    * 验证 JSON 语法
    */
   static validate(json: string): ValidationResult {
